@@ -11,15 +11,30 @@ namespace ToDoList.Controllers
         private ToDoContext context;
         public HomeController(ToDoContext ctx) => context = ctx;
 
-        public IActionResult Index(string id)
+        public IActionResult Index()
         {
             // load current filters and data needed for filter drop downs in ViewBag
+            ToDoViewModel toDoViewModel = new ToDoViewModel();
+            //var filters = new Filters(id);
+            toDoViewModel.Categories = context.Categories.ToList();
+            toDoViewModel.Statuses = context.Statuses.ToList();
+            toDoViewModel.Tasks = context.Tasks.ToList();
+          
+            toDoViewModel.DueFilters = new System.Collections.Generic.Dictionary<string, string> {
+                {"today", "Today" },
+                {"week", "Next 7 days" },
+                {"month", "Next 30 days" }
+            
+            };
+            return View(toDoViewModel);
+            /*
             var filters = new Filters(id);
             ViewBag.Filters = filters;
             ViewBag.Categories = context.Categories.ToList();
             ViewBag.Statuses = context.Statuses.ToList();
             ViewBag.DueFilters = Filters.DueFilterValues;
-
+            */
+            /*
             // get ToDo objects from database based on current filters
             IQueryable<ToDo> query = context.ToDos
                 .Include(t => t.Category).Include(t => t.Status);
@@ -39,30 +54,63 @@ namespace ToDoList.Controllers
                     query = query.Where(t => t.DueDate == today);
             }
             var tasks = query.OrderBy(t => t.DueDate).ToList();
-            return View(tasks);
+            */
+           
         }
 
         public IActionResult Add()
         {
-            ViewBag.Categories = context.Categories.ToList();
-            ViewBag.Statuses = context.Statuses.ToList();
-            return View();
+            ToDoViewModel toDoView = new ToDoViewModel
+            {
+                CurrentTask = new ToDo(),
+                Categories = context.Categories.ToList(),
+                Statuses = context.Statuses.ToList(),
+                
+                /*
+                ViewBag.Categories = context.Categories.ToList();
+                ViewBag.Statuses = context.Statuses.ToList();
+                */
+            };
+            toDoView.DueFilters = new System.Collections.Generic.Dictionary<string, string>
+            {
+                {"Today","Due Today"},
+                {"Tomorrow","Due Tomorrow" },
+                {"Future", "Due in the Future"},
+                {"Past","Past Due" },
+                {"None", "No Due DAte" }
+
+            };
+            return View(toDoView);
         }
 
         [HttpPost]
-        public IActionResult Add(ToDo task)
+        public IActionResult Add(ToDoViewModel model)
         {
             if (ModelState.IsValid)
             {
-                context.ToDos.Add(task);
+                context.Tasks.Add(model.CurrentTask);
                 context.SaveChanges();
                 return RedirectToAction("Index");
             }
             else
             {
+                model.Categories = context.Categories.ToList();
+                model.Statuses = context.Statuses.ToList();
+                
+                model.DueFilters = new System.Collections.Generic.Dictionary<string, string>
+                {
+                {"Today","Due Today"},
+                {"Tomorrow","Due Tomorrow" },
+                {"Future", "Due in the Future"},
+                {"Past","Past Due" },
+                {"None", "No Due DAte" }
+
+                };
+                /*
                 ViewBag.Categories = context.Categories.ToList();
                 ViewBag.Statuses = context.Statuses.ToList();
-                return View(task);
+                */
+                return View(model);
             }
         }
 
@@ -77,13 +125,13 @@ namespace ToDoList.Controllers
         public IActionResult Edit([FromRoute]string id, ToDo selected)
         {
             if (selected.StatusId == null) {
-                context.ToDos.Remove(selected);
+                context.Tasks.Remove(selected);
             }
             else {
                 string newStatusId = selected.StatusId;
-                selected = context.ToDos.Find(selected.Id);
+                selected = context.Tasks.Find(selected.Id);
                 selected.StatusId = newStatusId;
-                context.ToDos.Update(selected);
+                context.Tasks.Update(selected);
             }
             context.SaveChanges();
 

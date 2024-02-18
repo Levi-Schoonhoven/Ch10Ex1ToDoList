@@ -7,7 +7,7 @@ namespace ToDoList.Models
         public ToDoContext(DbContextOptions<ToDoContext> options)
             : base(options) { }
 
-        public DbSet<ToDo> ToDos { get; set; }
+        public DbSet<ToDo> Tasks { get; set; }
         public DbSet<Category> Categories { get; set; }
         public DbSet<Status> Statuses { get; set; }
 

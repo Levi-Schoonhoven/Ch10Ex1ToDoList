@@ -1,32 +1,41 @@
-﻿@model IEnumerable<ToDo>
+﻿@model ToDoViewModel
 @{
     string Overdue(ToDo task) => task.Overdue ? "bg-warning" : "";
 }
 <div class="row">
     <div class="col-sm-2">
-        <form asp-action="Filter" method="post">
+        <form asp-controller="Home" asp-action="Index"method="get"classs="form-inline">
             <div class="form-group">
-                <label>Category:</label>
-                <select name="filter" class="form-control"
-                        asp-items="@(new SelectList(ViewBag.Categories,
-                    "CategoryId", "Name", ViewBag.Filters.CategoryId))">
-                    <option value="all">All</option>
+                <label for="category-filter">Category:</label>
+                <select id="category-filter" name="category-filter"class="form-control">
+                <option value="">All</option> 
+                    @foreach(Category category in Model.Categories)
+                    {
+                        <option value="@category.CategoryId">@category.Name</option>
+                    }
+
                 </select>
             </div>
             <div class="form-group">
-                <label>Due:</label>
-                <select name="filter" class="form-control"
-                        asp-items="@(new SelectList(ViewBag.DueFilters,
-                    "Key", "Value", ViewBag.Filters.Due))">
-                    <option value="all">All</option>
+                <label for="status-filter">Status:</label>
+                <select id="status-filter"name="statusfilter" class="form-control">
+                        <option value="">All</option>
+                    @foreach(Status status in Model.Statuses)
+                    {
+                        <option value="@status.StatusId">@status.Name</option>
+                    }
+
                 </select>
             </div>
             <div class="form-group">
-                <label>Status:</label>
-                <select name="filter" class="form-control"
-                        asp-items="@(new SelectList(ViewBag.Statuses,
-                    "StatusId", "Name", ViewBag.Filters.StatusId))">
-                    <option value="all">All</option>
+                <label for="due-filter">Due:</label>
+                <select id="due-filter"name="dueFilter" class="form-control">
+                        <option value="">All</option>
+                    @foreach(KeyValuePair<string, string>filter in Model.DueFilters)
+                    {
+                        <option value="@filter.Value">@filter.Value</option>
+                    }
+
                 </select>
             </div>
             <button type="submit" class="btn btn-primary">Filter</button>
@@ -48,7 +57,7 @@
                 </tr>
             </thead>
             <tbody>
-            @foreach (ToDo task in Model)
+            @foreach (ToDo task in Model.Tasks)
             {
                 string overdue = Overdue(task);
                 <tr>
